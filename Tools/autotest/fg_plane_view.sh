@@ -21,4 +21,5 @@ nice fgfs \
     --disable-specular-highlight \
     --disable-anti-alias-hud \
     --wind=0@0 \
+    --enable-terrasync \
     $*
