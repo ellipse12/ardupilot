@@ -108,7 +108,7 @@ bool Plane::stick_mixing_enabled(void)
   previously set nav_roll calculates roll servo_out to try to
   stabilize the plane at the given roll
  */
-void Plane::stabilize_roll()
+void Plane::stabilize_roll() //TODO: Update
 {
     if (fly_inverted()) {
         // we want to fly upside down. We need to cope with wrap of
@@ -121,7 +121,7 @@ void Plane::stabilize_roll()
     }
 
     const float roll_out = stabilize_roll_get_roll_out();
-    SRV_Channels::set_output_scaled(SRV_Channel::k_aileron, roll_out);
+    SRV_Channels::set_output_scaled(SRV_Channel::k_aileron, roll_out); //AILERON_SET
 }
 
 float Plane::stabilize_roll_get_roll_out()
@@ -163,18 +163,18 @@ float Plane::stabilize_roll_get_roll_out()
   previously set nav_pitch and calculates servo_out values to try to
   stabilize the plane at the given attitude.
  */
-void Plane::stabilize_pitch()
+void Plane::stabilize_pitch() //TODO: update
 {
     int8_t force_elevator = takeoff_tail_hold();
     if (force_elevator != 0) {
         // we are holding the tail down during takeoff. Just convert
         // from a percentage to a -4500..4500 centidegree angle
-        SRV_Channels::set_output_scaled(SRV_Channel::k_elevator, 45*force_elevator);
+        SRV_Channels::set_output_scaled(SRV_Channel::k_elevator, 45*force_elevator); //ELEVATOR_SET
         return;
     }
 
     const float pitch_out = stabilize_pitch_get_pitch_out();
-    SRV_Channels::set_output_scaled(SRV_Channel::k_elevator, pitch_out);
+    SRV_Channels::set_output_scaled(SRV_Channel::k_elevator, pitch_out); //ELEVATOR_SET
 }
 
 float Plane::stabilize_pitch_get_pitch_out()
@@ -325,7 +325,7 @@ void Plane::stabilize_stick_mixing_fbw()
     - rate controlled with ground steering
     - yaw control for coordinated flight    
  */
-void Plane::stabilize_yaw()
+void Plane::stabilize_yaw() //TODO: update
 {
     bool ground_steering = false;
     if (landing.is_flaring()) {
@@ -360,22 +360,22 @@ void Plane::stabilize_yaw()
     /*
       now calculate rudder for the rudder
      */
-    const float rudder_output = calc_nav_yaw_coordinated();
+    //const float rudder_output = calc_nav_yaw_coordinated();
 
     if (!ground_steering) {
         // Not doing ground steering, output rudder on steering channel
-        SRV_Channels::set_output_scaled(SRV_Channel::k_rudder, rudder_output);
-        SRV_Channels::set_output_scaled(SRV_Channel::k_steering, rudder_output);
+        SRV_Channels::set_output_scaled(SRV_Channel::k_rudder, rudder_output); //RUDDER_SET
+        SRV_Channels::set_output_scaled(SRV_Channel::k_steering, rudder_output); //STEERING_SET
 
     } else if (!SRV_Channels::function_assigned(SRV_Channel::k_steering)) {
         // Ground steering active but no steering output configured, output steering on rudder channel
-        SRV_Channels::set_output_scaled(SRV_Channel::k_rudder, steering_output);
-        SRV_Channels::set_output_scaled(SRV_Channel::k_steering, steering_output);
+        SRV_Channels::set_output_scaled(SRV_Channel::k_rudder, steering_output); //RUDDER_SET
+        SRV_Channels::set_output_scaled(SRV_Channel::k_steering, steering_output); //STEERING_SET
 
     } else {
         // Ground steering with both steering and rudder channels
-        SRV_Channels::set_output_scaled(SRV_Channel::k_rudder, rudder_output);
-        SRV_Channels::set_output_scaled(SRV_Channel::k_steering, steering_output);
+        SRV_Channels::set_output_scaled(SRV_Channel::k_rudder, rudder_output); //RUDDER_SET
+        SRV_Channels::set_output_scaled(SRV_Channel::k_steering, steering_output); //STEERING_SET
     }
 
 }
@@ -407,8 +407,8 @@ void Plane::stabilize()
         const float speed_scaler = get_speed_scaler();
         const float aileron = rollController.get_rate_out(nav_scripting.roll_rate_dps, speed_scaler);
         const float elevator = pitchController.get_rate_out(nav_scripting.pitch_rate_dps, speed_scaler);
-        SRV_Channels::set_output_scaled(SRV_Channel::k_aileron, aileron);
-        SRV_Channels::set_output_scaled(SRV_Channel::k_elevator, elevator);
+        SRV_Channels::set_output_scaled(SRV_Channel::k_aileron, aileron); //AILERON_SET
+        SRV_Channels::set_output_scaled(SRV_Channel::k_elevator, elevator); //ELEVATOR_SET
         float rudder = 0;
         if (yawController.rate_control_enabled()) {
             rudder = nav_scripting.rudder_offset_pct * 45;
@@ -418,9 +418,9 @@ void Plane::stabilize()
                 yawController.reset_I();
             }
         }
-        SRV_Channels::set_output_scaled(SRV_Channel::k_rudder, rudder);
-        SRV_Channels::set_output_scaled(SRV_Channel::k_steering, rudder);
-        SRV_Channels::set_output_scaled(SRV_Channel::k_throttle, plane.nav_scripting.throttle_pct);
+        SRV_Channels::set_output_scaled(SRV_Channel::k_rudder, rudder); //RUDDER_SET
+        SRV_Channels::set_output_scaled(SRV_Channel::k_steering, rudder); //STEERING_SET
+        SRV_Channels::set_output_scaled(SRV_Channel::k_throttle, plane.nav_scripting.throttle_pct); //THROTTLE_SET
 #endif
     } else {
         plane.control_mode->run();
@@ -454,12 +454,12 @@ void Plane::calc_throttle()
         // user has asked for zero throttle - this may be done by a
         // mission which wants to turn off the engine for a parachute
         // landing
-        SRV_Channels::set_output_scaled(SRV_Channel::k_throttle, 0.0);
+        SRV_Channels::set_output_scaled(SRV_Channel::k_throttle, 0.0); //THROTTLE_SET
         return;
     }
 
     float commanded_throttle = TECS_controller.get_throttle_demand();
-    SRV_Channels::set_output_scaled(SRV_Channel::k_throttle, commanded_throttle);
+    SRV_Channels::set_output_scaled(SRV_Channel::k_throttle, commanded_throttle); //THROTTLE_SET
 }
 
 /*****************************************
