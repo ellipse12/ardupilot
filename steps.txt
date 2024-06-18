@@ -1,0 +1,48 @@
+# pseudo-code for ERay-Simplicity control mechanisms
+on-start:
+    check engines
+    check flaperons
+    check instruments
+    check sensors
+    check navigation
+    check controls
+    unlock controls
+on-takeoff:
+    while in-takeoff:
+        vec3 joystick-input = get(input.stick)
+        set plane-out = calc-motor-outputs(joystick-input, plane-context)
+        if get(input.landing-gear):
+            run retract-landing-gear // I don't remember if it actually has a retractable landing gear
+    end
+    if cruising-altitude:
+        load flight-plan
+        run flight-plan
+        run control-sleep //only for the actual plane, to avoid accidently bumping the controls considering a joystick is not difficult to move. Will not accept input until the input goes past a threshold
+
+struct PlaneOutput{
+    vec4 motors;
+    vec2 flaperons;
+
+}
+on-input:
+    vec3 joystick-input = clamp-input(get(input.stick)) //clamp may actually just be a scaling
+    PlaneOutput output = calc-motor-outputs(joystick-input, plane-context) //plane-context contains all sensor data and any other data required to calculate a safe output for the plane
+    //insert safety measures here (additional cases for if the number of motors decreases)
+    set plane = output
+
+calc-motor-outputs(vec3 input, PlaneCtx context){
+    vec3 velocity = calculate_new_velocity(input, context)
+    if not safety:
+       goto motors 
+    float magnitude = new_velocity.magnitude()
+    magnitude = magnitude < adjusted_stall_speed ? magnitude : adjusted_stall_speed //adjusted_stall_speed is the pre-calculated stall speed minus some safe threshold
+    
+motors:
+       
+    //TODO: calculate the motor matrix given the adjusted velocity and the plane context
+}
+
+    
+
+    
+    
