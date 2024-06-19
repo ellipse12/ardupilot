@@ -31,15 +31,22 @@ on-input:
     set plane = output
 
 calc-motor-outputs(vec3 input, PlaneCtx context){
-    vec3 velocity = calculate_new_velocity(input, context)
+    vec3 velocity = calculate_raw_velocity(input, context)
     if not safety:
        goto motors 
-    float magnitude = new_velocity.magnitude()
-    magnitude = magnitude < adjusted_stall_speed ? magnitude : adjusted_stall_speed //adjusted_stall_speed is the pre-calculated stall speed minus some safe threshold
-    
+    float magnitude = velocity.magnitude()
+    magnitude = min(magnitude, adjusted_stall_speed) / magnitude
+    velocity = magnitude * velocity
 motors:
-       
-    //TODO: calculate the motor matrix given the adjusted velocity and the plane context
+    mat4x4 motors = get motors
+    mat4x4 motors_output = calculate_motors_power(motors, velocity)
+    PlaneCtx new_context = calculate_periph_motion(velocity, input, context)
+
+    if errors:
+       throw error
+       return get(current_velocity)
+    set context = new_context
+    set motors = motors_output
 }
 
     
